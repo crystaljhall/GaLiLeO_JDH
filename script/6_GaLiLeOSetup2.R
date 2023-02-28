@@ -144,9 +144,9 @@ choose_doc <- function(text_list, corpus_metadata, full_ID){
     cat("This is 1 of ", text_list[[tl_index[j]]]$AuthorDocs, " documents written by ", text_list[[tl_index[j]]]$Author, "in the corpus.\n")
     cat("The title is: ", corpus_metadata[[tl_index[j]]]$Metadata$Title, "\n")
     cat("\nIt was written or published ", text_list[[tl_index[j]]]$Year, ".\n")
-    cat(text_list[[tl_index[j]]]$YearInfo$SameYear, "document(s) was (were) dated or (published) in the same year.\n")
-    cat(text_list[[tl_index[j]]]$YearInfo$Before, "document(s) was (were) dated or (published) in the years before it.\n", 
-        text_list[[tl_index[j]]]$YearInfo$After, "document(s) was (were) dated or (published) in years after it.\n")
+    cat(text_list[[tl_index[j]]]$YearInfo$SameYear, "document(s) was (were) dated (or published) in the same year.\n")
+    cat(text_list[[tl_index[j]]]$YearInfo$Before, "document(s) was (were) dated (or published) in the years before it.\n", 
+        text_list[[tl_index[j]]]$YearInfo$After, "document(s) was (were) dated (or published) in years after it.\n")
     target_y <- text_list[[tl_index[j]]]$Year
     years_df$Color[which(years_df$Year == target_y)] <- "Yes"
     
@@ -320,9 +320,9 @@ word_info <- function(type_list, type){
   cat("The word appears in the following topics:\n")
   print(type_list[[type]]$TopicWeight)
   df <- type_list[[type]]$DocLevel
-  type_plot <- ggplot(df, aes(x = factor(Year), fill = factor(GG)))+
+  type_plot <- ggplot(df, aes(x = as.numeric(Year), fill = factor(GG)))+
     geom_bar(stat = "count") +
-    theme(axis.title.x=element.text("Year"))+
+    theme(axis.title.x=element_text("Year"))+
     labs(title = paste("Chronological Use of ", type, ".", sep = ""), x = "Year")+
     scale_fill_discrete(name ="Author", breaks = c("GG", "NotGG"), labels = c("Galileo", "Other Authors"))
   type_plot
@@ -370,9 +370,9 @@ see_KWIC <- function(type_list, type, stop_words){
   wrappers_subset <- wrappers_df[which(wrappers_df$Term %in% names(count)[1:7]),]
   wrapper_plot <- ggplot(wrappers_subset, aes(x = as.numeric(Year)))+
     geom_bar(stat="count", aes(fill = as.factor(Term)), width = 1) +
-    theme(axis.title.x=element.text("Year"))+
+    #theme(axis.title.x=element_text("Year"))+
     labs(title = paste("Chronological Use of Terms with ", type, ".", sep = ""), x = "Year") +
-    scale_x_discrete(breaks = seq((min(as.numeric(wrappers_subset$Year))-5), (max(as.numeric(wrappers_subset$Year))+5), by = 5)) +
+    #scale_x_discrete(breaks = seq((min(as.numeric(wrappers_subset$Year))-5), (max(as.numeric(wrappers_subset$Year))+5), by = 5)) +
     scale_fill_discrete(name ="Term")
   wrapper_plot
 }
@@ -469,8 +469,11 @@ find_types_by_range <- function(corpus_list, GG = c("yes", "no", "high", "low"),
 }
 
 compare_author_vocabulary <- function(author_name, metadata_list, text_list, corpus_list){
-  author_docs <- IDs[which(author_v == author_name)]
-  #print(length(author_docs))
+  author_rows <- which(author_v == author_name)
+  author_docs <- as.character()
+  for(i in 1:length(author_rows)){
+    author_docs[i] <- corpus[[i]]$ID
+  }
   author_types <- as.character()
   for(i in 1:length(author_docs)){
     doc_types <- text_list[[author_docs[i]]]$Types
